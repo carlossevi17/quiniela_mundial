@@ -78,6 +78,11 @@ const app = {
     });
     document.getElementById(viewId).classList.remove('hidden');
     
+    // Save to localStorage
+    if (viewId !== 'auth-view') {
+      localStorage.setItem('quiniela_currentView', viewId);
+    }
+    
     if (viewId === 'leagues-view') loadLeaguesView();
     if (viewId === 'matches-view') loadMatches();
     if (viewId === 'ranking-view') loadRanking();
@@ -95,6 +100,7 @@ const app = {
   switchLeague: (leagueId) => {
     if (!leagueId) return;
     appState.activeLeagueId = parseInt(leagueId);
+    localStorage.setItem('quiniela_activeLeagueId', leagueId);
     
     // Update names in views
     const leagueName = appState.myLeagues.find(l => l.id === appState.activeLeagueId)?.name;
@@ -139,6 +145,9 @@ elements.authForm.addEventListener('submit', async (e) => {
 });
 
 elements.logoutBtn.addEventListener('click', async () => {
+  localStorage.removeItem('quiniela_currentView');
+  localStorage.removeItem('quiniela_activeLeagueId');
+  localStorage.removeItem('quiniela_currentMatchId');
   await api.auth.signOut();
 });
 
@@ -173,12 +182,30 @@ api.auth.onAuthStateChange(async (event, session) => {
       elements.navBtnMatches.style.display = 'block';
       elements.navBtnRanking.style.display = 'block';
       
-      // Auto-select first league if none selected
-      if (!appState.activeLeagueId) {
-        elements.globalLeagueSelector.value = appState.myLeagues[0].id;
-        app.switchLeague(appState.myLeagues[0].id);
+      const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
+      const savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
+      const savedMatchId = localStorage.getItem('quiniela_currentMatchId');
+
+      if (savedMatchId) {
+        appState.currentMatchId = parseInt(savedMatchId);
       }
-      app.showView('matches-view');
+
+      let targetLeagueId = null;
+      if (savedLeagueId && appState.myLeagues.some(l => l.id == savedLeagueId)) {
+        targetLeagueId = savedLeagueId;
+      } else {
+        targetLeagueId = appState.myLeagues[0].id;
+      }
+
+      elements.globalLeagueSelector.value = targetLeagueId;
+      app.switchLeague(targetLeagueId);
+      
+      // Prevent showing match detail if no match is selected
+      if (savedView === 'match-detail-view' && !appState.currentMatchId) {
+        app.showView('matches-view');
+      } else {
+        app.showView(savedView);
+      }
     } else {
       elements.leagueSelectorContainer.classList.add('hidden');
       elements.navBtnMatches.style.display = 'none';
@@ -389,6 +416,7 @@ async function loadRanking() {
 
 async function viewMatchDetails(matchId) {
   appState.currentMatchId = matchId;
+  localStorage.setItem('quiniela_currentMatchId', matchId);
   app.showView('match-detail-view');
 }
 
