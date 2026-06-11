@@ -173,8 +173,12 @@ api.auth.onAuthStateChange(async (event, session) => {
     
     // Check if we should prompt for nickname
     if (!localStorage.getItem(`quiniela_nick_${appState.user.id}`)) {
-      elements.nicknameModal.classList.remove('hidden');
-      elements.nicknameInput.value = profile.display_name || '';
+      if (elements.nicknameModal) {
+        elements.nicknameModal.classList.remove('hidden');
+      }
+      if (elements.nicknameInput) {
+        elements.nicknameInput.value = profile?.display_name || '';
+      }
     }
     
     // Show admin panel if admin
