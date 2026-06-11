@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=11">
+  <link rel="stylesheet" href="styles.css?v=12">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -30,6 +30,7 @@
         <button class="nav-btn" onclick="app.showView('matches-view')" id="nav-btn-matches"
           style="display:none;">Partidos</button>
         <button class="nav-btn" id="nav-btn-ranking" onclick="app.showView('ranking-view')" style="display:none;">Clasificación</button>
+        <button class="nav-btn" id="nav-btn-future" onclick="app.showView('future-view')" style="display:none;">Futuros</button>
         <button class="nav-btn" id="nav-btn-history" onclick="app.showView('history-view')" style="display:none;">Histórico</button>
         <button class="nav-btn" id="logout-btn">Salir</button>
       </div>
@@ -112,6 +113,21 @@
         <h3>Partidos Finalizados</h3>
         <div id="history-list" class="matches-grid">
           <!-- Histórico inyectado por JS -->
+        </div>
+      </div>
+    </section>
+
+    <!-- Future View -->
+    <section id="future-view" class="view hidden">
+      <div class="view-header">
+        <h2>Futuros</h2>
+        <p class="text-muted">Partidos a más de 24 horas</p>
+      </div>
+
+      <div class="glass-panel" style="margin-top:2rem;">
+        <h3>Próximos Partidos</h3>
+        <div id="future-list" class="matches-grid">
+          <!-- Futuros inyectado por JS -->
         </div>
       </div>
     </section>
@@ -240,7 +256,7 @@
 
   </main>
 
-  <script src="app.js?v=11"></script>
+  <script src="app.js?v=12"></script>
 </body>
 
 </html>

@@ -25,6 +25,7 @@ const elements = {
   matchesView: document.getElementById('matches-view'),
   rankingView: document.getElementById('ranking-view'),
   historyView: document.getElementById('history-view'),
+  futureView: document.getElementById('future-view'),
   matchDetailView: document.getElementById('match-detail-view'),
   
   leagueSelectorContainer: document.getElementById('league-selector-container'),
@@ -33,6 +34,7 @@ const elements = {
   navBtnMatches: document.getElementById('nav-btn-matches'),
   navBtnRanking: document.getElementById('nav-btn-ranking'),
   navBtnHistory: document.getElementById('nav-btn-history'),
+  navBtnFuture: document.getElementById('nav-btn-future'),
 
   createLeagueForm: document.getElementById('create-league-form'),
   joinLeagueForm: document.getElementById('join-league-form'),
@@ -46,6 +48,7 @@ const elements = {
 
   matchesList: document.getElementById('matches-list'),
   historyList: document.getElementById('history-list'),
+  futureList: document.getElementById('future-list'),
   adminAddMatch: document.getElementById('admin-add-match'),
   addMatchForm: document.getElementById('add-match-form'),
 
@@ -80,7 +83,7 @@ const app = {
       return app.showView('leagues-view');
     }
 
-    ['auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'history-view', 'match-detail-view'].forEach(id => {
+    ['auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'history-view', 'future-view', 'match-detail-view'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden');
     });
@@ -93,7 +96,7 @@ const app = {
     }
     
     if (viewId === 'leagues-view') loadLeaguesView();
-    if (viewId === 'matches-view' || viewId === 'history-view') loadMatches();
+    if (viewId === 'matches-view' || viewId === 'history-view' || viewId === 'future-view') loadMatches();
     if (viewId === 'ranking-view') loadRanking();
     if (viewId === 'match-detail-view') loadMatchDetail(appState.currentMatchId);
   },
@@ -232,6 +235,7 @@ async function handleAuthChange(event, session, myToken) {
       elements.navBtnMatches.style.display = 'block';
       elements.navBtnRanking.style.display = 'block';
       elements.navBtnHistory.style.display = 'block';
+      elements.navBtnFuture.style.display = 'block';
 
       const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
       let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
@@ -344,6 +348,7 @@ elements.createLeagueForm.addEventListener('submit', async (e) => {
   elements.navBtnMatches.style.display = 'block';
   elements.navBtnRanking.style.display = 'block';
   elements.navBtnHistory.style.display = 'block';
+  elements.navBtnFuture.style.display = 'block';
   elements.globalLeagueSelector.value = newLeague.id;
   app.switchLeague(newLeague.id);
   app.showView('leagues-view');
@@ -372,6 +377,7 @@ elements.joinLeagueForm.addEventListener('submit', async (e) => {
   elements.navBtnMatches.style.display = 'block';
   elements.navBtnRanking.style.display = 'block';
   elements.navBtnHistory.style.display = 'block';
+  elements.navBtnFuture.style.display = 'block';
   elements.globalLeagueSelector.value = league.id;
   app.switchLeague(league.id);
   app.showView('matches-view');
@@ -396,15 +402,18 @@ async function loadMatches() {
   
   elements.matchesList.innerHTML = '';
   elements.historyList.innerHTML = '';
+  elements.futureList.innerHTML = '';
 
   const now = new Date();
   const FOUR_HOURS_MS = 4 * 60 * 60 * 1000;
+  const TWENTY_FOUR_HOURS_MS = 24 * 60 * 60 * 1000;
 
   matches.forEach(match => {
     const prediction = userPredictions?.find(p => p.match_id === match.id);
     const matchStart = new Date(match.start_time);
     const hasStarted = matchStart <= now;
     const isHistory = hasStarted && (now - matchStart > FOUR_HOURS_MS) && match.status === 'finished';
+    const isFuture = !hasStarted && (matchStart - now > TWENTY_FOUR_HOURS_MS);
 
     const card = document.createElement('div');
     card.className = 'match-card';
@@ -444,6 +453,8 @@ async function loadMatches() {
 
     if (isHistory) {
       elements.historyList.appendChild(card);
+    } else if (isFuture) {
+      elements.futureList.appendChild(card);
     } else {
       elements.matchesList.appendChild(card);
     }
