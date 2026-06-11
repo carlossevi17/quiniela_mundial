@@ -641,6 +641,7 @@ elements.adminResultForm.addEventListener('submit', async (e) => {
   if (error) alert("Error: " + error.message);
   else {
     alert("Resultado guardado. Los puntos de TODAS las liguillas han sido calculados automáticamente.");
+    loadMatches(); // Refrescar la lista global
     loadMatchDetail(appState.currentMatchId);
   }
 });

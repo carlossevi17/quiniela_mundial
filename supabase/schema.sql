@@ -124,7 +124,7 @@ BEGIN
     END IF;
     RETURN NEW;
 END;
-$$ LANGUAGE plpgsql;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
 
 CREATE TRIGGER on_match_score_update AFTER UPDATE ON public.matches FOR EACH ROW EXECUTE FUNCTION public.trigger_update_match_points();
 
