@@ -4,7 +4,8 @@
 const SUPABASE_URL = 'https://rlxzdkxkqgtbbhdowfx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJseHpka3hrcWd0YmJoYmRvd2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODM1NjYsImV4cCI6MjA5Njc1OTU2Nn0.D-jZt7b3IaJDq8wRGx1i_9ib8F1XIO3W1FqgDc0GIAc';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// Renombramos la variable a "api" para evitar conflicto con la librería global "supabase"
+const api = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- ESTADO GLOBAL ---
 const appState = {
@@ -55,7 +56,7 @@ const elements = {
   detailStatus: document.getElementById('detail-status'),
   detailPredictionsList: document.getElementById('detail-predictions-list'),
   detailPredictionsLocked: document.getElementById('detail-predictions-locked'),
-  detailLeagueName: document.getElementById('detail-League-name'),
+  detailLeagueName: document.getElementById('detail-league-name'),
 
   editMatchModal: document.getElementById('edit-match-modal'),
   editMatchForm: document.getElementById('edit-match-form')
@@ -120,10 +121,10 @@ elements.authForm.addEventListener('submit', async (e) => {
   let error = null;
 
   if (authMode === 'login') {
-    const res = await supabase.auth.signInWithPassword({ email, password });
+    const res = await api.auth.signInWithPassword({ email, password });
     error = res.error;
   } else {
-    const res = await supabase.auth.signUp({ email, password });
+    const res = await api.auth.signUp({ email, password });
     error = res.error;
     if (!error) {
       alert("Registro exitoso. Ya puedes entrar.");
@@ -138,16 +139,16 @@ elements.authForm.addEventListener('submit', async (e) => {
 });
 
 elements.logoutBtn.addEventListener('click', async () => {
-  await supabase.auth.signOut();
+  await api.auth.signOut();
 });
 
-supabase.auth.onAuthStateChange(async (event, session) => {
+api.auth.onAuthStateChange(async (event, session) => {
   appState.user = session?.user || null;
   if (appState.user) {
     elements.navbar.classList.remove('hidden');
     
     // Fetch profile
-    const { data: profile } = await supabase.from('profiles').select('*').eq('id', appState.user.id).single();
+    const { data: profile } = await api.from('profiles').select('*').eq('id', appState.user.id).single();
     appState.profile = profile;
     
     // Show admin panel if admin
@@ -187,7 +188,7 @@ supabase.auth.onAuthStateChange(async (event, session) => {
 
 async function loadUserLeagues() {
   // Join query to get leagues the user is in
-  const { data, error } = await supabase
+  const { data, error } = await api
     .from('league_members')
     .select('leagues(id, name, join_code)')
     .eq('user_id', appState.user.id);
@@ -235,11 +236,11 @@ elements.createLeagueForm.addEventListener('submit', async (e) => {
   const code = Math.random().toString(36).substring(2, 8).toUpperCase();
   
   // Create league
-  const { data: newLeague, error } = await supabase.from('leagues').insert([{ name, join_code: code, created_by: appState.user.id }]).select().single();
+  const { data: newLeague, error } = await api.from('leagues').insert([{ name, join_code: code, created_by: appState.user.id }]).select().single();
   if (error) return alert("Error al crear: " + error.message);
   
   // Join as member
-  await supabase.from('league_members').insert([{ league_id: newLeague.id, user_id: appState.user.id }]);
+  await api.from('league_members').insert([{ league_id: newLeague.id, user_id: appState.user.id }]);
   
   alert(`Liguilla creada! Código para tus amigos: ${code}`);
   elements.createLeagueForm.reset();
@@ -259,12 +260,12 @@ elements.joinLeagueForm.addEventListener('submit', async (e) => {
   const code = document.getElementById('join-league-code').value.toUpperCase();
   
   // Find league by code
-  const { data: league, error } = await supabase.from('leagues').select('*').eq('join_code', code).single();
+  const { data: league, error } = await api.from('leagues').select('*').eq('join_code', code).single();
   
   if (error || !league) return alert("Código no válido o liguilla no encontrada.");
   
   // Join
-  const { error: joinError } = await supabase.from('league_members').insert([{ league_id: league.id, user_id: appState.user.id }]);
+  const { error: joinError } = await api.from('league_members').insert([{ league_id: league.id, user_id: appState.user.id }]);
   
   if (joinError) return alert("Ya estás en esta liguilla o hubo un error.");
   
@@ -287,13 +288,13 @@ elements.joinLeagueForm.addEventListener('submit', async (e) => {
 async function loadMatches() {
   if (!appState.activeLeagueId) return;
 
-  const { data: matches, error } = await supabase.from('matches').select('*').order('start_time', { ascending: true });
+  const { data: matches, error } = await api.from('matches').select('*').order('start_time', { ascending: true });
   if (error) return console.error(error);
   
   appState.matches = matches; // Guardar en estado global para usarlo al editar
   
   // Load predictions ONLY for the current user in the CURRENT LEAGUE
-  const { data: userPredictions } = await supabase.from('predictions')
+  const { data: userPredictions } = await api.from('predictions')
     .select('*')
     .eq('user_id', appState.user.id)
     .eq('league_id', appState.activeLeagueId);
@@ -347,7 +348,7 @@ async function loadRanking() {
   if (!appState.activeLeagueId) return;
 
   // Fetch only members of the current league
-  const { data: membersData } = await supabase
+  const { data: membersData } = await api
     .from('league_members')
     .select('profiles(id, display_name, email)')
     .eq('league_id', appState.activeLeagueId);
@@ -356,7 +357,7 @@ async function loadRanking() {
   const profiles = membersData.map(m => m.profiles).filter(Boolean);
 
   // Fetch predictions for the current league
-  const { data: predictions } = await supabase
+  const { data: predictions } = await api
     .from('predictions')
     .select('user_id, points')
     .eq('league_id', appState.activeLeagueId);
@@ -386,7 +387,7 @@ async function viewMatchDetails(matchId) {
 async function loadMatchDetail(matchId) {
   if (!appState.activeLeagueId) return;
 
-  const { data: match } = await supabase.from('matches').select('*').eq('id', matchId).single();
+  const { data: match } = await api.from('matches').select('*').eq('id', matchId).single();
   const hasStarted = new Date(match.start_time) <= new Date();
 
   elements.detailTeams.textContent = `${match.team_a} vs ${match.team_b}`;
@@ -409,13 +410,13 @@ async function loadMatchDetail(matchId) {
   }
 
   // Predictions (only for members of current league)
-  const { data: membersData } = await supabase
+  const { data: membersData } = await api
     .from('league_members')
     .select('profiles(id, display_name, email)')
     .eq('league_id', appState.activeLeagueId);
   const profiles = membersData?.map(m => m.profiles).filter(Boolean) || [];
 
-  const { data: predictions } = await supabase
+  const { data: predictions } = await api
     .from('predictions')
     .select('*')
     .eq('match_id', matchId)
@@ -456,7 +457,7 @@ async function savePrediction(matchId) {
   if (score_a === '' || score_b === '') return alert("Introduce ambos goles");
 
   // Upsert for specific match + user + league
-  const { error } = await supabase.from('predictions').upsert({
+  const { error } = await api.from('predictions').upsert({
     user_id: appState.user.id,
     match_id: matchId,
     league_id: appState.activeLeagueId,
@@ -486,7 +487,7 @@ elements.addMatchForm.addEventListener('submit', async (e) => {
   const team_b = document.getElementById('admin-team-b').value;
   const start_time = document.getElementById('admin-start-time').value;
 
-  const { error } = await supabase.from('matches').insert([{ team_a, team_b, start_time: new Date(start_time).toISOString() }]);
+  const { error } = await api.from('matches').insert([{ team_a, team_b, start_time: new Date(start_time).toISOString() }]);
   
   if (error) alert("Error: " + error.message);
   else {
@@ -521,7 +522,7 @@ elements.editMatchForm?.addEventListener('submit', async (e) => {
   const team_b = document.getElementById('edit-team-b').value;
   const start_time = document.getElementById('edit-start-time').value;
 
-  const { error } = await supabase.from('matches').update({
+  const { error } = await api.from('matches').update({
     team_a,
     team_b,
     start_time: new Date(start_time).toISOString()
@@ -541,7 +542,7 @@ elements.adminResultForm.addEventListener('submit', async (e) => {
   const score_a = parseInt(document.getElementById('admin-res-a').value);
   const score_b = parseInt(document.getElementById('admin-res-b').value);
 
-  const { error } = await supabase.from('matches').update({
+  const { error } = await api.from('matches').update({
     score_a,
     score_b,
     status: 'finished'
