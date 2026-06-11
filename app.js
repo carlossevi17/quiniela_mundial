@@ -184,7 +184,10 @@ api.auth.onAuthStateChange(async (event, session) => {
       elements.navBtnRanking.style.display = 'block';
       
       const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
-      const savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
+      let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
+      if (savedView === 'loading-view' || savedView === 'auth-view') {
+        savedView = 'matches-view';
+      }
       const savedMatchId = localStorage.getItem('quiniela_currentMatchId');
 
       if (savedMatchId) {
