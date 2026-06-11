@@ -1,8 +1,8 @@
 // app.js
 
 // 1. Configuración de Supabase
-const SUPABASE_URL = 'YOUR_SUPABASE_URL_HERE';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY_HERE';
+const SUPABASE_URL = 'https://rlxzdkxkqgtbbhdowfx.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJseHpka3hrcWd0YmJoYmRvd2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODM1NjYsImV4cCI6MjA5Njc1OTU2Nn0.D-jZt7b3IaJDq8wRGx1i_9ib8F1XIO3W1FqgDc0GIAc';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
