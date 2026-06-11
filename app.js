@@ -77,7 +77,7 @@ const app = {
       return app.showView('leagues-view');
     }
 
-    ['loading-view', 'auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'match-detail-view'].forEach(id => {
+    ['auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'match-detail-view'].forEach(id => {
       const el = document.getElementById(id);
       if (el) el.classList.add('hidden');
     });
@@ -85,7 +85,7 @@ const app = {
     if (target) target.classList.remove('hidden');
     
     // Save to localStorage
-    if (viewId !== 'auth-view' && viewId !== 'loading-view') {
+    if (viewId !== 'auth-view') {
       localStorage.setItem('quiniela_currentView', viewId);
     }
     
@@ -175,7 +175,6 @@ api.auth.onAuthStateChange(async (event, session) => {
     appState.user = session?.user || null;
 
     if (appState.user) {
-      app.showView('loading-view');
       elements.navbar.classList.remove('hidden');
 
       // Fetch profile
