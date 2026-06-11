@@ -161,10 +161,25 @@ elements.logoutBtn.addEventListener('click', async () => {
   await api.auth.signOut();
 });
 
-api.auth.onAuthStateChange(async (event, session) => {
+// Token para cancelar ejecuciones paralelas del callback
+let authCallToken = 0;
+
+api.auth.onAuthStateChange((event, session) => {
   console.log("Auth state changed:", event, !!session);
 
-  // Solo mostrar login cuando Supabase confirma explícitamente que NO hay sesión
+  // Cada nueva llamada invalida la anterior
+  authCallToken++;
+  const myToken = authCallToken;
+
+  // Pequeño delay para que varios eventos en ráfaga solo procesen el último
+  setTimeout(() => {
+    if (myToken !== authCallToken) return; // Cancelado por llamada más nueva
+    handleAuthChange(event, session, myToken);
+  }, 50);
+});
+
+async function handleAuthChange(event, session, myToken) {
+  // Solo mostrar login cuando Supabase confirma SIGNED_OUT
   if (event === 'SIGNED_OUT') {
     appState.user = null;
     appState.profile = null;
@@ -174,10 +189,9 @@ api.auth.onAuthStateChange(async (event, session) => {
     return;
   }
 
-  // Si no hay sesión en este evento, ignorar (puede pasar mientras el token se refresca)
+  // Si no hay sesión, ignorar (puede pasar mientras refresca el token)
   if (!session) return;
 
-  // A partir de aquí, el usuario SÍ está autenticado
   appState.user = session.user;
 
   try {
@@ -187,6 +201,9 @@ api.auth.onAuthStateChange(async (event, session) => {
     const { data: profile, error: profileErr } = await api
       .from('profiles').select('*').eq('id', appState.user.id).single();
     if (profileErr) console.error("Error perfil:", profileErr);
+
+    // Si llegó una llamada más nueva mientras esperábamos, abortar
+    if (myToken !== authCallToken) return;
 
     appState.profile = profile;
 
@@ -204,6 +221,8 @@ api.auth.onAuthStateChange(async (event, session) => {
     }
 
     await loadUserLeagues();
+
+    if (myToken !== authCallToken) return;
 
     if (appState.myLeagues.length > 0) {
       elements.leagueSelectorContainer.classList.remove('hidden');
@@ -244,15 +263,15 @@ api.auth.onAuthStateChange(async (event, session) => {
     }
 
   } catch (err) {
-    console.error("Error al cargar:", err);
-    // Si hay error pero el usuario sigue logueado, mostrar liguillas en vez de expulsarle
+    console.error("Error al cargar sesión:", err);
     if (appState.user) {
       app.showView('leagues-view');
     } else {
+      elements.navbar.classList.add('hidden');
       app.showView('auth-view');
     }
   }
-});
+}
 
 // --- LEAGUES ---
 
