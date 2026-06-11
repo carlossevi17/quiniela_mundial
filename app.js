@@ -1,7 +1,7 @@
 // app.js
 
 // 1. Configuración de Supabase
-const SUPABASE_URL = 'https://rlxzdkxkqgtbbhdowfx.supabase.co';
+const SUPABASE_URL = 'https://rlxzdkxkqgtbbhbdowfx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJseHpka3hrcWd0YmJoYmRvd2Z4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODExODM1NjYsImV4cCI6MjA5Njc1OTU2Nn0.D-jZt7b3IaJDq8wRGx1i_9ib8F1XIO3W1FqgDc0GIAc';
 
 // Renombramos la variable a "api" para evitar conflicto con la librería global "supabase"
