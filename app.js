@@ -32,6 +32,7 @@ const elements = {
   myLeaguesList: document.getElementById('my-leagues-list'),
   navBtnMatches: document.getElementById('nav-btn-matches'),
   navBtnRanking: document.getElementById('nav-btn-ranking'),
+  navBtnHistory: document.getElementById('nav-btn-history'),
 
   createLeagueForm: document.getElementById('create-league-form'),
   joinLeagueForm: document.getElementById('join-league-form'),
@@ -230,6 +231,7 @@ async function handleAuthChange(event, session, myToken) {
       elements.leagueSelectorContainer.classList.remove('hidden');
       elements.navBtnMatches.style.display = 'block';
       elements.navBtnRanking.style.display = 'block';
+      elements.navBtnHistory.style.display = 'block';
 
       const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
       let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
@@ -341,6 +343,7 @@ elements.createLeagueForm.addEventListener('submit', async (e) => {
   elements.leagueSelectorContainer.classList.remove('hidden');
   elements.navBtnMatches.style.display = 'block';
   elements.navBtnRanking.style.display = 'block';
+  elements.navBtnHistory.style.display = 'block';
   elements.globalLeagueSelector.value = newLeague.id;
   app.switchLeague(newLeague.id);
   app.showView('leagues-view');
@@ -368,6 +371,7 @@ elements.joinLeagueForm.addEventListener('submit', async (e) => {
   elements.leagueSelectorContainer.classList.remove('hidden');
   elements.navBtnMatches.style.display = 'block';
   elements.navBtnRanking.style.display = 'block';
+  elements.navBtnHistory.style.display = 'block';
   elements.globalLeagueSelector.value = league.id;
   app.switchLeague(league.id);
   app.showView('matches-view');
