@@ -164,80 +164,93 @@ elements.logoutBtn.addEventListener('click', async () => {
 api.auth.onAuthStateChange(async (event, session) => {
   console.log("Auth state changed:", event, !!session);
 
+  // Solo mostrar login cuando Supabase confirma explícitamente que NO hay sesión
+  if (event === 'SIGNED_OUT') {
+    appState.user = null;
+    appState.profile = null;
+    appState.myLeagues = [];
+    elements.navbar.classList.add('hidden');
+    app.showView('auth-view');
+    return;
+  }
+
+  // Si no hay sesión en este evento, ignorar (puede pasar mientras el token se refresca)
+  if (!session) return;
+
+  // A partir de aquí, el usuario SÍ está autenticado
+  appState.user = session.user;
+
   try {
-    appState.user = session?.user || null;
+    elements.navbar.classList.remove('hidden');
 
-    if (appState.user) {
-      elements.navbar.classList.remove('hidden');
+    // Fetch profile
+    const { data: profile, error: profileErr } = await api
+      .from('profiles').select('*').eq('id', appState.user.id).single();
+    if (profileErr) console.error("Error perfil:", profileErr);
 
-      // Fetch profile
-      const { data: profile, error: profileErr } = await api
-        .from('profiles').select('*').eq('id', appState.user.id).single();
-      if (profileErr) console.error("Error perfil:", profileErr);
+    appState.profile = profile;
 
-      appState.profile = profile;
+    // Pedir apodo si es la primera vez
+    if (!localStorage.getItem(`quiniela_nick_${appState.user.id}`)) {
+      if (elements.nicknameModal) elements.nicknameModal.classList.remove('hidden');
+      if (elements.nicknameInput) elements.nicknameInput.value = profile?.display_name || '';
+    }
 
-      // Check if we should prompt for nickname
-      if (!localStorage.getItem(`quiniela_nick_${appState.user.id}`)) {
-        if (elements.nicknameModal) elements.nicknameModal.classList.remove('hidden');
-        if (elements.nicknameInput) elements.nicknameInput.value = profile?.display_name || '';
-      }
-
-      // Show admin panel if admin
-      if (profile?.is_admin) {
-        elements.adminAddMatch.classList.remove('hidden');
-      } else {
-        elements.adminAddMatch.classList.add('hidden');
-      }
-
-      await loadUserLeagues();
-
-      if (appState.myLeagues.length > 0) {
-        elements.leagueSelectorContainer.classList.remove('hidden');
-        elements.navBtnMatches.style.display = 'block';
-        elements.navBtnRanking.style.display = 'block';
-
-        const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
-        let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
-        if (savedView === 'loading-view' || savedView === 'auth-view') {
-          savedView = 'matches-view';
-        }
-        const savedMatchId = localStorage.getItem('quiniela_currentMatchId');
-
-        if (savedMatchId) {
-          appState.currentMatchId = parseInt(savedMatchId);
-        }
-
-        let targetLeagueId = null;
-        if (savedLeagueId && appState.myLeagues.some(l => l.id == savedLeagueId)) {
-          targetLeagueId = savedLeagueId;
-        } else {
-          targetLeagueId = appState.myLeagues[0].id;
-        }
-
-        elements.globalLeagueSelector.value = targetLeagueId;
-        app.switchLeague(targetLeagueId, { silent: true });
-
-        if (savedView === 'match-detail-view' && !appState.currentMatchId) {
-          app.showView('matches-view');
-        } else {
-          app.showView(savedView);
-        }
-      } else {
-        elements.leagueSelectorContainer.classList.add('hidden');
-        elements.navBtnMatches.style.display = 'none';
-        elements.navBtnRanking.style.display = 'none';
-        app.showView('leagues-view');
-      }
-
+    // Panel admin
+    if (profile?.is_admin) {
+      elements.adminAddMatch.classList.remove('hidden');
     } else {
-      elements.navbar.classList.add('hidden');
-      app.showView('auth-view');
+      elements.adminAddMatch.classList.add('hidden');
+    }
+
+    await loadUserLeagues();
+
+    if (appState.myLeagues.length > 0) {
+      elements.leagueSelectorContainer.classList.remove('hidden');
+      elements.navBtnMatches.style.display = 'block';
+      elements.navBtnRanking.style.display = 'block';
+
+      const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
+      let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
+      if (savedView === 'loading-view' || savedView === 'auth-view') {
+        savedView = 'matches-view';
+      }
+      const savedMatchId = localStorage.getItem('quiniela_currentMatchId');
+
+      if (savedMatchId) {
+        appState.currentMatchId = parseInt(savedMatchId);
+      }
+
+      let targetLeagueId = null;
+      if (savedLeagueId && appState.myLeagues.some(l => l.id == savedLeagueId)) {
+        targetLeagueId = savedLeagueId;
+      } else {
+        targetLeagueId = appState.myLeagues[0].id;
+      }
+
+      elements.globalLeagueSelector.value = targetLeagueId;
+      app.switchLeague(targetLeagueId, { silent: true });
+
+      if (savedView === 'match-detail-view' && !appState.currentMatchId) {
+        app.showView('matches-view');
+      } else {
+        app.showView(savedView);
+      }
+    } else {
+      elements.leagueSelectorContainer.classList.add('hidden');
+      elements.navBtnMatches.style.display = 'none';
+      elements.navBtnRanking.style.display = 'none';
+      app.showView('leagues-view');
     }
 
   } catch (err) {
-    console.error("Error crítico al cargar:", err);
-    app.showView('auth-view');
+    console.error("Error al cargar:", err);
+    // Si hay error pero el usuario sigue logueado, mostrar liguillas en vez de expulsarle
+    if (appState.user) {
+      app.showView('leagues-view');
+    } else {
+      app.showView('auth-view');
+    }
   }
 });
 
