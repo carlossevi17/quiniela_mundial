@@ -161,15 +161,8 @@ elements.logoutBtn.addEventListener('click', async () => {
   await api.auth.signOut();
 });
 
-// Guard to prevent re-entrant auth handler calls
-let isHandlingAuth = false;
-
 api.auth.onAuthStateChange(async (event, session) => {
   console.log("Auth state changed:", event, !!session);
-
-  // Prevent re-entrant calls (Supabase can fire this multiple times on load)
-  if (isHandlingAuth) return;
-  isHandlingAuth = true;
 
   try {
     appState.user = session?.user || null;
@@ -244,10 +237,7 @@ api.auth.onAuthStateChange(async (event, session) => {
 
   } catch (err) {
     console.error("Error crítico al cargar:", err);
-    // Fallback: nunca dejar atascado en cargando
     app.showView('auth-view');
-  } finally {
-    isHandlingAuth = false;
   }
 });
 
