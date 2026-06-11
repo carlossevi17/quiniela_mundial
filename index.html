@@ -211,10 +211,13 @@
             <label>Fecha y Hora</label>
             <input type="datetime-local" id="edit-start-time" required>
           </div>
-          <div style="display:flex; gap:1rem; margin-top:1rem;">
+          <div style="display:flex; gap:1rem; margin-top:1rem; flex-wrap:wrap;">
             <button type="submit" class="btn-primary">Guardar Cambios</button>
             <button type="button" class="btn-secondary"
               onclick="document.getElementById('edit-match-modal').classList.add('hidden')">Cancelar</button>
+          </div>
+          <div style="margin-top:0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top:0.75rem;">
+            <button type="button" onclick="deleteMatch()" style="width:100%; padding:0.6rem; background:rgba(239,68,68,0.2); color:#ef4444; border:1px solid rgba(239,68,68,0.4); border-radius:8px; cursor:pointer; font-weight:600;">🗑️ Eliminar Partido</button>
           </div>
         </form>
       </div>
@@ -222,7 +225,7 @@
 
   </main>
 
-  <script src="app.js?v=5"></script>
+  <script src="app.js?v=6"></script>
 </body>
 
 </html>

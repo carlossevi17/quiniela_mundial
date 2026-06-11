@@ -675,8 +675,28 @@ elements.nicknameForm?.addEventListener('submit', async (e) => {
   }
 });
 
+// Admin: Eliminar Partido
+async function deleteMatch() {
+  const matchId = document.getElementById('edit-match-id').value;
+  const match = appState.matches.find(m => m.id == matchId);
+  if (!match) return;
+
+  const confirmed = confirm(`¿Seguro que quieres eliminar el partido "${match.team_a} vs ${match.team_b}"?\nEsto borrará también todos los pronósticos asociados.`);
+  if (!confirmed) return;
+
+  const { error } = await api.from('matches').delete().eq('id', matchId);
+
+  if (error) {
+    alert('Error al eliminar: ' + error.message);
+  } else {
+    elements.editMatchModal.classList.add('hidden');
+    loadMatches();
+  }
+}
+
 // Make globally available
 window.app = app;
 window.savePrediction = savePrediction;
 window.viewMatchDetails = viewMatchDetails;
 window.openEditMatch = openEditMatch;
+window.deleteMatch = deleteMatch;
