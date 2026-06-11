@@ -436,7 +436,7 @@ async function loadMatches() {
       </div>
       ${predictionHtml}
       <div class="match-actions" style="margin-top: 1rem;">
-        ${!hasStarted ? `<button class="btn-primary" onclick="savePrediction(${match.id})" style="flex:2;">Guardar</button>` : ''}
+        ${!hasStarted ? `<button class="btn-primary" onclick="savePrediction(${match.id}, this)" style="flex:2;">Guardar</button>` : ''}
         <button class="btn-secondary" onclick="viewMatchDetails(${match.id})">Detalles</button>
         ${appState.profile?.is_admin ? `<button class="btn-secondary" onclick="openEditMatch(${match.id})" style="background:rgba(239, 68, 68, 0.2)">Editar</button>` : ''}
       </div>
@@ -555,7 +555,7 @@ async function loadMatchDetail(matchId) {
 
 // --- ACTIONS ---
 
-async function savePrediction(matchId) {
+async function savePrediction(matchId, btn) {
   if (!appState.activeLeagueId) return alert("Selecciona una liguilla primero");
 
   const score_a = document.getElementById(`pred-a-${matchId}`).value;
@@ -576,14 +576,17 @@ async function savePrediction(matchId) {
     alert("Error al guardar: " + error.message);
   } else {
     // Feedback visual rápido
-    const btn = event.target;
-    const oldText = btn.textContent;
-    btn.textContent = "¡Guardado!";
-    btn.style.background = "var(--primary-hover)";
-    setTimeout(() => {
-      btn.textContent = oldText;
-      btn.style.background = "var(--primary)";
-    }, 1500);
+    if (btn) {
+      const oldText = btn.textContent;
+      btn.textContent = "¡Guardado!";
+      btn.style.background = "var(--primary-hover)";
+      setTimeout(() => {
+        btn.textContent = oldText;
+        btn.style.background = ""; // Restaurar CSS original
+      }, 1500);
+    } else {
+      alert("Pronóstico guardado correctamente.");
+    }
   }
 }
 
