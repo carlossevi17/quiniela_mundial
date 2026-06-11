@@ -143,12 +143,18 @@ elements.logoutBtn.addEventListener('click', async () => {
 });
 
 api.auth.onAuthStateChange(async (event, session) => {
+  console.log("Auth state changed:", event, !!session);
   appState.user = session?.user || null;
   if (appState.user) {
+    console.log("Usuario logueado:", appState.user.id);
     elements.navbar.classList.remove('hidden');
     
     // Fetch profile
-    const { data: profile } = await api.from('profiles').select('*').eq('id', appState.user.id).single();
+    console.log("Cargando perfil...");
+    const { data: profile, error: profileErr } = await api.from('profiles').select('*').eq('id', appState.user.id).single();
+    if (profileErr) console.error("Error perfil:", profileErr);
+    console.log("Perfil cargado:", profile);
+    
     appState.profile = profile;
     
     // Show admin panel if admin
@@ -158,7 +164,9 @@ api.auth.onAuthStateChange(async (event, session) => {
       elements.adminAddMatch.classList.add('hidden');
     }
 
+    console.log("Cargando liguillas...");
     await loadUserLeagues();
+    console.log("Liguillas cargadas:", appState.myLeagues.length);
     
     if (appState.myLeagues.length > 0) {
       elements.leagueSelectorContainer.classList.remove('hidden');
