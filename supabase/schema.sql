@@ -75,6 +75,7 @@ CREATE POLICY "Users can join leagues." ON public.league_members FOR INSERT WITH
 CREATE POLICY "Matches are viewable by everyone." ON public.matches FOR SELECT USING (true);
 CREATE POLICY "Admins can insert matches." ON public.matches FOR INSERT WITH CHECK (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
 CREATE POLICY "Admins can update matches." ON public.matches FOR UPDATE USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
+CREATE POLICY "Admins can delete matches." ON public.matches FOR DELETE USING (EXISTS (SELECT 1 FROM public.profiles WHERE id = auth.uid() AND is_admin = true));
 
 -- Predictions
 CREATE POLICY "Predictions viewable by owner or if match started." ON public.predictions FOR SELECT USING (
