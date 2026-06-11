@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quiniela Mundial 2026</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <!-- Header / Navigation -->
+  <nav id="navbar" class="hidden">
+    <div class="nav-content">
+      <div class="nav-brand" onclick="app.showView('leagues-view')">🏆 Quiniela 2026</div>
+      
+      <!-- Global League Selector -->
+      <div id="league-selector-container" class="hidden">
+        <select id="global-league-selector" onchange="app.switchLeague(this.value)">
+          <option value="" disabled selected>-- Elige Liguilla --</option>
+        </select>
+      </div>
+
+      <div class="nav-links">
+        <button class="nav-btn" onclick="app.showView('leagues-view')">Liguillas</button>
+        <button class="nav-btn" onclick="app.showView('matches-view')" id="nav-btn-matches" style="display:none;">Partidos</button>
+        <button class="nav-btn" onclick="app.showView('ranking-view')" id="nav-btn-ranking" style="display:none;">Clasificación</button>
+        <button class="nav-btn btn-outline" id="logout-btn">Salir</button>
+      </div>
+    </div>
+  </nav>
+
+  <main id="app-container">
+    
+    <!-- Auth View -->
+    <section id="auth-view" class="view active-view">
+      <div class="auth-card glass-panel">
+        <h1 class="glow-text">Quiniela Mundial</h1>
+        <p class="subtitle">Demuestra quién sabe más de fútbol</p>
+        
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active" onclick="app.switchAuthTab('login')">Entrar</button>
+          <button id="tab-register" class="auth-tab" onclick="app.switchAuthTab('register')">Registro</button>
+        </div>
+
+        <form id="auth-form">
+          <div class="input-group">
+            <label for="email">Email</label>
+            <input type="email" id="email" required placeholder="tu@email.com">
+          </div>
+          <div class="input-group">
+            <label for="password">Contraseña</label>
+            <input type="password" id="password" required placeholder="••••••••">
+          </div>
+          <button type="submit" class="btn-primary" id="auth-submit-btn">Entrar</button>
+          <div id="auth-error" class="error-msg"></div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Leagues View -->
+    <section id="leagues-view" class="view hidden">
+      <div class="header-section">
+        <h2>Mis Liguillas</h2>
+        <p>Crea o únete a liguillas con tus grupos de amigos (Trabajo, Pueblo, etc.)</p>
+      </div>
+      
+      <div class="leagues-grid">
+        <div class="glass-panel text-center">
+          <h3>Unirse a Liguilla</h3>
+          <p class="text-muted" style="margin-bottom:1rem;">Pídele el código a un amigo</p>
+          <form id="join-league-form">
+            <input type="text" id="join-league-code" placeholder="Código (ej: PUEBLO2026)" required style="margin-bottom:1rem; text-transform:uppercase;">
+            <button type="submit" class="btn-primary">Unirse</button>
+          </form>
+        </div>
+        
+        <div class="glass-panel text-center">
+          <h3>Crear Liguilla Nueva</h3>
+          <p class="text-muted" style="margin-bottom:1rem;">Máximo recomendado: 20 amigos</p>
+          <form id="create-league-form">
+            <input type="text" id="create-league-name" placeholder="Nombre (ej: Los del curro)" required style="margin-bottom:1rem;">
+            <button type="submit" class="btn-primary">Crear</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="header-section" style="margin-top:3rem;">
+        <h3>Liguillas en las que participas</h3>
+      </div>
+      <div id="my-leagues-list" class="matches-grid">
+        <!-- Mis liguillas -->
+      </div>
+    </section>
+
+    <!-- Matches View -->
+    <section id="matches-view" class="view hidden">
+      <div class="header-section">
+        <h2>Partidos - <span id="current-league-name" style="color:var(--primary);"></span></h2>
+        <p>Añade tus pronósticos para esta liguilla en concreto antes del inicio.</p>
+      </div>
+      <div id="matches-list" class="matches-grid">
+        <!-- Matches will be injected here -->
+      </div>
+      <div id="admin-add-match" class="admin-panel hidden">
+        <h3>Panel Admin Global: Añadir Partido</h3>
+        <p style="font-size:0.8rem; margin-bottom:1rem;">Afecta a todas las liguillas.</p>
+        <form id="add-match-form" class="inline-form">
+          <input type="text" id="admin-team-a" placeholder="Equipo A" required>
+          <input type="text" id="admin-team-b" placeholder="Equipo B" required>
+          <input type="datetime-local" id="admin-start-time" required>
+          <button type="submit" class="btn-primary">Añadir</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- Ranking View -->
+    <section id="ranking-view" class="view hidden">
+      <div class="header-section">
+        <h2>Clasificación - <span id="ranking-league-name" style="color:var(--primary);"></span></h2>
+      </div>
+      <div class="glass-panel">
+        <table class="ranking-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Jugador</th>
+              <th>Pts</th>
+            </tr>
+          </thead>
+          <tbody id="ranking-list">
+            <!-- Ranking injected here -->
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Match Details View -->
+    <section id="match-detail-view" class="view hidden">
+      <div class="header-section">
+        <button class="btn-back" onclick="app.showView('matches-view')">← Volver</button>
+        <h2 id="detail-teams">Equipo A vs Equipo B</h2>
+        <p id="detail-status">Status</p>
+      </div>
+      
+      <div id="admin-result-panel" class="admin-panel hidden glass-panel">
+        <h3>Admin Global: Introducir Resultado Final</h3>
+        <form id="admin-result-form" class="inline-form">
+          <input type="number" id="admin-res-a" placeholder="Goles A" min="0" required>
+          <input type="number" id="admin-res-b" placeholder="Goles B" min="0" required>
+          <button type="submit" class="btn-primary">Guardar Resultado Final</button>
+        </form>
+      </div>
+
+      <div class="glass-panel" style="margin-top: 2rem;">
+        <h3>Pronósticos de tu Liguilla (<span id="detail-league-name" style="color:var(--primary);"></span>)</h3>
+        <table class="predictions-table">
+          <thead>
+            <tr>
+              <th>Jugador</th>
+              <th>Pronóstico</th>
+              <th>Puntos</th>
+            </tr>
+          </thead>
+          <tbody id="detail-predictions-list">
+            <!-- Predictions injected here -->
+          </tbody>
+        </table>
+        <p id="detail-predictions-locked" class="hidden text-muted text-center">Los pronósticos de los demás aparecerán cuando empiece el partido.</p>
+      </div>
+    </section>
+
+    <!-- Edit Match Modal (Admin Only) -->
+    <div id="edit-match-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:flex; justify-content:center; align-items:center;">
+      <div class="glass-panel" style="width: 90%; max-width: 400px;">
+        <h3 style="margin-bottom: 1rem; color: var(--primary);">Editar Partido</h3>
+        <form id="edit-match-form">
+          <input type="hidden" id="edit-match-id">
+          <div class="input-group">
+            <label>Equipo A</label>
+            <input type="text" id="edit-team-a" required>
+          </div>
+          <div class="input-group">
+            <label>Equipo B</label>
+            <input type="text" id="edit-team-b" required>
+          </div>
+          <div class="input-group">
+            <label>Fecha y Hora</label>
+            <input type="datetime-local" id="edit-start-time" required>
+          </div>
+          <div style="display:flex; gap:1rem; margin-top:1rem;">
+            <button type="submit" class="btn-primary">Guardar Cambios</button>
+            <button type="button" class="btn-secondary" onclick="document.getElementById('edit-match-modal').classList.add('hidden')">Cancelar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
