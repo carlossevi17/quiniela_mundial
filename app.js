@@ -78,9 +78,11 @@ const app = {
     }
 
     ['loading-view', 'auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'match-detail-view'].forEach(id => {
-      document.getElementById(id).classList.add('hidden');
+      const el = document.getElementById(id);
+      if (el) el.classList.add('hidden');
     });
-    document.getElementById(viewId).classList.remove('hidden');
+    const target = document.getElementById(viewId);
+    if (target) target.classList.remove('hidden');
     
     // Save to localStorage
     if (viewId !== 'auth-view' && viewId !== 'loading-view') {
@@ -159,86 +161,94 @@ elements.logoutBtn.addEventListener('click', async () => {
   await api.auth.signOut();
 });
 
+// Guard to prevent re-entrant auth handler calls
+let isHandlingAuth = false;
+
 api.auth.onAuthStateChange(async (event, session) => {
   console.log("Auth state changed:", event, !!session);
-  appState.user = session?.user || null;
-  if (appState.user) {
-    app.showView('loading-view');
-    console.log("Usuario logueado:", appState.user.id);
-    elements.navbar.classList.remove('hidden');
-    
-    // Fetch profile
-    console.log("Cargando perfil...");
-    const { data: profile, error: profileErr } = await api.from('profiles').select('*').eq('id', appState.user.id).single();
-    if (profileErr) console.error("Error perfil:", profileErr);
-    console.log("Perfil cargado:", profile);
-    
-    appState.profile = profile;
-    
-    // Check if we should prompt for nickname
-    if (!localStorage.getItem(`quiniela_nick_${appState.user.id}`)) {
-      if (elements.nicknameModal) {
-        elements.nicknameModal.classList.remove('hidden');
-      }
-      if (elements.nicknameInput) {
-        elements.nicknameInput.value = profile?.display_name || '';
-      }
-    }
-    
-    // Show admin panel if admin
-    if (profile?.is_admin) {
-      elements.adminAddMatch.classList.remove('hidden');
-    } else {
-      elements.adminAddMatch.classList.add('hidden');
-    }
 
-    console.log("Cargando liguillas...");
-    await loadUserLeagues();
-    console.log("Liguillas cargadas:", appState.myLeagues.length);
-    
-    if (appState.myLeagues.length > 0) {
-      elements.leagueSelectorContainer.classList.remove('hidden');
-      elements.navBtnMatches.style.display = 'block';
-      elements.navBtnRanking.style.display = 'block';
-      
-      const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
-      let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
-      if (savedView === 'loading-view' || savedView === 'auth-view') {
-        savedView = 'matches-view';
-      }
-      const savedMatchId = localStorage.getItem('quiniela_currentMatchId');
+  // Prevent re-entrant calls (Supabase can fire this multiple times on load)
+  if (isHandlingAuth) return;
+  isHandlingAuth = true;
 
-      if (savedMatchId) {
-        appState.currentMatchId = parseInt(savedMatchId);
+  try {
+    appState.user = session?.user || null;
+
+    if (appState.user) {
+      app.showView('loading-view');
+      elements.navbar.classList.remove('hidden');
+
+      // Fetch profile
+      const { data: profile, error: profileErr } = await api
+        .from('profiles').select('*').eq('id', appState.user.id).single();
+      if (profileErr) console.error("Error perfil:", profileErr);
+
+      appState.profile = profile;
+
+      // Check if we should prompt for nickname
+      if (!localStorage.getItem(`quiniela_nick_${appState.user.id}`)) {
+        if (elements.nicknameModal) elements.nicknameModal.classList.remove('hidden');
+        if (elements.nicknameInput) elements.nicknameInput.value = profile?.display_name || '';
       }
 
-      let targetLeagueId = null;
-      if (savedLeagueId && appState.myLeagues.some(l => l.id == savedLeagueId)) {
-        targetLeagueId = savedLeagueId;
+      // Show admin panel if admin
+      if (profile?.is_admin) {
+        elements.adminAddMatch.classList.remove('hidden');
       } else {
-        targetLeagueId = appState.myLeagues[0].id;
+        elements.adminAddMatch.classList.add('hidden');
       }
 
-      // Use silent=true to avoid triggering duplicate data loads during startup
-      elements.globalLeagueSelector.value = targetLeagueId;
-      app.switchLeague(targetLeagueId, { silent: true });
-      
-      // showView does the single data load at the end
-      if (savedView === 'match-detail-view' && !appState.currentMatchId) {
-        app.showView('matches-view');
+      await loadUserLeagues();
+
+      if (appState.myLeagues.length > 0) {
+        elements.leagueSelectorContainer.classList.remove('hidden');
+        elements.navBtnMatches.style.display = 'block';
+        elements.navBtnRanking.style.display = 'block';
+
+        const savedLeagueId = localStorage.getItem('quiniela_activeLeagueId');
+        let savedView = localStorage.getItem('quiniela_currentView') || 'matches-view';
+        if (savedView === 'loading-view' || savedView === 'auth-view') {
+          savedView = 'matches-view';
+        }
+        const savedMatchId = localStorage.getItem('quiniela_currentMatchId');
+
+        if (savedMatchId) {
+          appState.currentMatchId = parseInt(savedMatchId);
+        }
+
+        let targetLeagueId = null;
+        if (savedLeagueId && appState.myLeagues.some(l => l.id == savedLeagueId)) {
+          targetLeagueId = savedLeagueId;
+        } else {
+          targetLeagueId = appState.myLeagues[0].id;
+        }
+
+        elements.globalLeagueSelector.value = targetLeagueId;
+        app.switchLeague(targetLeagueId, { silent: true });
+
+        if (savedView === 'match-detail-view' && !appState.currentMatchId) {
+          app.showView('matches-view');
+        } else {
+          app.showView(savedView);
+        }
       } else {
-        app.showView(savedView);
+        elements.leagueSelectorContainer.classList.add('hidden');
+        elements.navBtnMatches.style.display = 'none';
+        elements.navBtnRanking.style.display = 'none';
+        app.showView('leagues-view');
       }
+
     } else {
-      elements.leagueSelectorContainer.classList.add('hidden');
-      elements.navBtnMatches.style.display = 'none';
-      elements.navBtnRanking.style.display = 'none';
-      app.showView('leagues-view');
+      elements.navbar.classList.add('hidden');
+      app.showView('auth-view');
     }
 
-  } else {
-    elements.navbar.classList.add('hidden');
+  } catch (err) {
+    console.error("Error crítico al cargar:", err);
+    // Fallback: nunca dejar atascado en cargando
     app.showView('auth-view');
+  } finally {
+    isHandlingAuth = false;
   }
 });
 
