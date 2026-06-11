@@ -73,13 +73,13 @@ const app = {
       return app.showView('leagues-view');
     }
 
-    ['auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'match-detail-view'].forEach(id => {
+    ['loading-view', 'auth-view', 'leagues-view', 'matches-view', 'ranking-view', 'match-detail-view'].forEach(id => {
       document.getElementById(id).classList.add('hidden');
     });
     document.getElementById(viewId).classList.remove('hidden');
     
     // Save to localStorage
-    if (viewId !== 'auth-view') {
+    if (viewId !== 'auth-view' && viewId !== 'loading-view') {
       localStorage.setItem('quiniela_currentView', viewId);
     }
     
@@ -155,6 +155,7 @@ api.auth.onAuthStateChange(async (event, session) => {
   console.log("Auth state changed:", event, !!session);
   appState.user = session?.user || null;
   if (appState.user) {
+    app.showView('loading-view');
     console.log("Usuario logueado:", appState.user.id);
     elements.navbar.classList.remove('hidden');
     
