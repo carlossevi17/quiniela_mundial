@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,12 +11,13 @@
   <link rel="stylesheet" href="styles.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
+
 <body>
   <!-- Header / Navigation -->
   <nav id="navbar" class="hidden">
     <div class="nav-content">
       <div class="nav-brand" onclick="app.showView('leagues-view')">🏆 Quiniela 2026</div>
-      
+
       <!-- Global League Selector -->
       <div id="league-selector-container" class="hidden">
         <select id="global-league-selector" onchange="app.switchLeague(this.value)">
@@ -25,21 +27,23 @@
 
       <div class="nav-links">
         <button class="nav-btn" onclick="app.showView('leagues-view')">Liguillas</button>
-        <button class="nav-btn" onclick="app.showView('matches-view')" id="nav-btn-matches" style="display:none;">Partidos</button>
-        <button class="nav-btn" onclick="app.showView('ranking-view')" id="nav-btn-ranking" style="display:none;">Clasificación</button>
+        <button class="nav-btn" onclick="app.showView('matches-view')" id="nav-btn-matches"
+          style="display:none;">Partidos</button>
+        <button class="nav-btn" onclick="app.showView('ranking-view')" id="nav-btn-ranking"
+          style="display:none;">Clasificación</button>
         <button class="nav-btn btn-outline" id="logout-btn">Salir</button>
       </div>
     </div>
   </nav>
 
   <main id="app-container">
-    
+
     <!-- Auth View -->
     <section id="auth-view" class="view active-view">
       <div class="auth-card glass-panel">
         <h1 class="glow-text">Quiniela Mundial</h1>
         <p class="subtitle">Demuestra quién sabe más de fútbol</p>
-        
+
         <div class="auth-tabs">
           <button id="tab-login" class="auth-tab active" onclick="app.switchAuthTab('login')">Entrar</button>
           <button id="tab-register" class="auth-tab" onclick="app.switchAuthTab('register')">Registro</button>
@@ -66,22 +70,24 @@
         <h2>Mis Liguillas</h2>
         <p>Crea o únete a liguillas con tus grupos de amigos (Trabajo, Pueblo, etc.)</p>
       </div>
-      
+
       <div class="leagues-grid">
         <div class="glass-panel text-center">
           <h3>Unirse a Liguilla</h3>
           <p class="text-muted" style="margin-bottom:1rem;">Pídele el código a un amigo</p>
           <form id="join-league-form">
-            <input type="text" id="join-league-code" placeholder="Código (ej: PUEBLO2026)" required style="margin-bottom:1rem; text-transform:uppercase;">
+            <input type="text" id="join-league-code" placeholder="Código (ej: PUEBLO2026)" required
+              style="margin-bottom:1rem; text-transform:uppercase;">
             <button type="submit" class="btn-primary">Unirse</button>
           </form>
         </div>
-        
+
         <div class="glass-panel text-center">
           <h3>Crear Liguilla Nueva</h3>
           <p class="text-muted" style="margin-bottom:1rem;">Máximo recomendado: 20 amigos</p>
           <form id="create-league-form">
-            <input type="text" id="create-league-name" placeholder="Nombre (ej: Los del curro)" required style="margin-bottom:1rem;">
+            <input type="text" id="create-league-name" placeholder="Nombre (ej: Los del curro)" required
+              style="margin-bottom:1rem;">
             <button type="submit" class="btn-primary">Crear</button>
           </form>
         </div>
@@ -144,7 +150,7 @@
         <h2 id="detail-teams">Equipo A vs Equipo B</h2>
         <p id="detail-status">Status</p>
       </div>
-      
+
       <div id="admin-result-panel" class="admin-panel hidden glass-panel">
         <h3>Admin Global: Introducir Resultado Final</h3>
         <form id="admin-result-form" class="inline-form">
@@ -168,12 +174,14 @@
             <!-- Predictions injected here -->
           </tbody>
         </table>
-        <p id="detail-predictions-locked" class="hidden text-muted text-center">Los pronósticos de los demás aparecerán cuando empiece el partido.</p>
+        <p id="detail-predictions-locked" class="hidden text-muted text-center">Los pronósticos de los demás aparecerán
+          cuando empiece el partido.</p>
       </div>
     </section>
 
     <!-- Edit Match Modal (Admin Only) -->
-    <div id="edit-match-modal" class="hidden" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:flex; justify-content:center; align-items:center;">
+    <div id="edit-match-modal" class="hidden"
+      style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:flex; justify-content:center; align-items:center;">
       <div class="glass-panel" style="width: 90%; max-width: 400px;">
         <h3 style="margin-bottom: 1rem; color: var(--primary);">Editar Partido</h3>
         <form id="edit-match-form">
@@ -192,7 +200,8 @@
           </div>
           <div style="display:flex; gap:1rem; margin-top:1rem;">
             <button type="submit" class="btn-primary">Guardar Cambios</button>
-            <button type="button" class="btn-secondary" onclick="document.getElementById('edit-match-modal').classList.add('hidden')">Cancelar</button>
+            <button type="button" class="btn-secondary"
+              onclick="document.getElementById('edit-match-modal').classList.add('hidden')">Cancelar</button>
           </div>
         </form>
       </div>
@@ -202,4 +211,5 @@
 
   <script src="app.js"></script>
 </body>
+
 </html>
