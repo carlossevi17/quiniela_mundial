@@ -101,7 +101,7 @@ const app = {
     elements.authError.textContent = '';
   },
 
-  switchLeague: (leagueId) => {
+  switchLeague: (leagueId, { silent = false } = {}) => {
     if (!leagueId) return;
     appState.activeLeagueId = parseInt(leagueId);
     localStorage.setItem('quiniela_activeLeagueId', leagueId);
@@ -113,11 +113,15 @@ const app = {
     const detailLg = document.getElementById('detail-league-name');
     if (detailLg) detailLg.textContent = leagueName;
 
-    // Refresh current view if needed
-    const currentActive = document.querySelector('.view:not(.hidden)').id;
-    if (currentActive === 'matches-view') loadMatches();
-    if (currentActive === 'ranking-view') loadRanking();
-    if (currentActive === 'match-detail-view') loadMatchDetail(appState.currentMatchId);
+    // Only refresh current view if not called silently during startup
+    if (!silent) {
+      const activeEl = document.querySelector('.view:not(.hidden)');
+      if (!activeEl) return;
+      const currentActive = activeEl.id;
+      if (currentActive === 'matches-view') loadMatches();
+      if (currentActive === 'ranking-view') loadRanking();
+      if (currentActive === 'match-detail-view') loadMatchDetail(appState.currentMatchId);
+    }
   }
 };
 
@@ -215,10 +219,11 @@ api.auth.onAuthStateChange(async (event, session) => {
         targetLeagueId = appState.myLeagues[0].id;
       }
 
+      // Use silent=true to avoid triggering duplicate data loads during startup
       elements.globalLeagueSelector.value = targetLeagueId;
-      app.switchLeague(targetLeagueId);
+      app.switchLeague(targetLeagueId, { silent: true });
       
-      // Prevent showing match detail if no match is selected
+      // showView does the single data load at the end
       if (savedView === 'match-detail-view' && !appState.currentMatchId) {
         app.showView('matches-view');
       } else {
