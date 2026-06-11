@@ -187,6 +187,19 @@
       </div>
     </section>
 
+    <!-- Nickname Modal -->
+    <div id="nickname-modal" class="hidden"
+      style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:2000; display:flex; justify-content:center; align-items:center;">
+      <div class="glass-panel text-center" style="width: 90%; max-width: 400px;">
+        <h3 style="margin-bottom: 1rem; color: var(--primary);">👋 ¡Bienvenido!</h3>
+        <p class="text-muted" style="margin-bottom: 1rem;">Elige cómo quieres que te vean los demás en la clasificación de las liguillas.</p>
+        <form id="nickname-form">
+          <input type="text" id="nickname-input" required placeholder="Tu apodo" style="margin-bottom: 1rem; font-size: 1.2rem; text-align: center;">
+          <button type="submit" class="btn-primary" style="width: 100%;">Guardar Apodo</button>
+        </form>
+      </div>
+    </div>
+
     <!-- Edit Match Modal (Admin Only) -->
     <div id="edit-match-modal" class="hidden"
       style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; display:flex; justify-content:center; align-items:center;">

@@ -59,7 +59,11 @@ const elements = {
   detailLeagueName: document.getElementById('detail-league-name'),
 
   editMatchModal: document.getElementById('edit-match-modal'),
-  editMatchForm: document.getElementById('edit-match-form')
+  editMatchForm: document.getElementById('edit-match-form'),
+  
+  nicknameModal: document.getElementById('nickname-modal'),
+  nicknameForm: document.getElementById('nickname-form'),
+  nicknameInput: document.getElementById('nickname-input')
 };
 
 let authMode = 'login'; // 'login' | 'register'
@@ -166,6 +170,12 @@ api.auth.onAuthStateChange(async (event, session) => {
     console.log("Perfil cargado:", profile);
     
     appState.profile = profile;
+    
+    // Check if we should prompt for nickname
+    if (!localStorage.getItem(`quiniela_nick_${appState.user.id}`)) {
+      elements.nicknameModal.classList.remove('hidden');
+      elements.nicknameInput.value = profile.display_name || '';
+    }
     
     // Show admin panel if admin
     if (profile?.is_admin) {
@@ -592,6 +602,36 @@ elements.adminResultForm.addEventListener('submit', async (e) => {
   else {
     alert("Resultado guardado. Los puntos de TODAS las liguillas han sido calculados automáticamente.");
     loadMatchDetail(appState.currentMatchId);
+  }
+});
+
+// Nickname form
+elements.nicknameForm?.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const newNick = elements.nicknameInput.value.trim();
+  if (!newNick) return;
+
+  const btn = e.target.querySelector('button');
+  const oldText = btn.textContent;
+  btn.textContent = "Guardando...";
+  btn.disabled = true;
+
+  const { error } = await api.from('profiles').update({ display_name: newNick }).eq('id', appState.user.id);
+  
+  btn.textContent = oldText;
+  btn.disabled = false;
+
+  if (error) {
+    alert("Error al guardar el apodo: " + error.message);
+  } else {
+    appState.profile.display_name = newNick;
+    localStorage.setItem(`quiniela_nick_${appState.user.id}`, 'true');
+    elements.nicknameModal.classList.add('hidden');
+    
+    // Refresh ranking if active
+    const currentActive = document.querySelector('.view:not(.hidden)')?.id;
+    if (currentActive === 'ranking-view') loadRanking();
+    if (currentActive === 'match-detail-view') loadMatchDetail(appState.currentMatchId);
   }
 });
 
