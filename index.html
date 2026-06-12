@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=12">
+  <link rel="stylesheet" href="styles.css?v=13">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 
@@ -24,6 +24,12 @@
           <option value="" disabled selected>-- Elige Liguilla --</option>
         </select>
       </div>
+
+      <button class="hamburger" id="hamburger-btn" onclick="toggleMobileNav()" aria-label="Abrir menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
 
       <div class="nav-links">
         <button class="nav-btn" onclick="app.showView('leagues-view')">Liguillas</button>
@@ -256,7 +262,7 @@
 
   </main>
 
-  <script src="app.js?v=12"></script>
+  <script src="app.js?v=13"></script>
 </body>
 
 </html>

@@ -74,9 +74,30 @@ const elements = {
 
 let authMode = 'login'; // 'login' | 'register'
 
+// --- MENÚ MÓVIL ---
+function toggleMobileNav() {
+  const btn = document.getElementById('hamburger-btn');
+  const links = document.querySelector('.nav-links');
+  if (btn) btn.classList.toggle('open');
+  if (links) links.classList.toggle('nav-open');
+}
+
+function closeMobileNav() {
+  const btn = document.getElementById('hamburger-btn');
+  const links = document.querySelector('.nav-links');
+  if (btn) btn.classList.remove('open');
+  if (links) links.classList.remove('nav-open');
+}
+
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('nav')) closeMobileNav();
+});
+
 // --- NAVEGACIÓN ---
 const app = {
   showView: (viewId) => {
+    closeMobileNav();
+
     // Si intenta ir a partidos/ranking sin liga seleccionada, no dejarle
     if ((viewId === 'matches-view' || viewId === 'ranking-view') && !appState.activeLeagueId) {
       alert("Por favor, selecciona o crea una liguilla primero.");
