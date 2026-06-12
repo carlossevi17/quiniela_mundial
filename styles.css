@@ -98,6 +98,17 @@ nav {
   transform: translateY(-2px);
 }
 
+.btn-primary.btn-saved {
+  background: rgba(0, 255, 136, 0.15);
+  color: #6ee3a8;
+  border: 1px solid rgba(0, 255, 136, 0.35);
+}
+
+.btn-primary.btn-saved:hover {
+  background: rgba(0, 255, 136, 0.22);
+  transform: none;
+}
+
 .btn-outline {
   border: 1px solid var(--border);
   padding: 0.5rem 1rem;

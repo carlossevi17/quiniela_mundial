@@ -450,9 +450,9 @@ async function loadMatches() {
     } else {
        predictionHtml = `
          <div class="prediction-inputs">
-           <input type="number" id="pred-a-${match.id}" min="0" value="${prediction?.score_a ?? ''}" placeholder="0">
+           <input type="number" id="pred-a-${match.id}" min="0" value="${prediction?.score_a ?? ''}" placeholder="0" oninput="markPredictionDirty(${match.id})">
            <span>-</span>
-           <input type="number" id="pred-b-${match.id}" min="0" value="${prediction?.score_b ?? ''}" placeholder="0">
+           <input type="number" id="pred-b-${match.id}" min="0" value="${prediction?.score_b ?? ''}" placeholder="0" oninput="markPredictionDirty(${match.id})">
          </div>
        `;
     }
@@ -466,7 +466,7 @@ async function loadMatches() {
       </div>
       ${predictionHtml}
       <div class="match-actions" style="margin-top: 1rem;">
-        ${!hasStarted ? `<button class="btn-primary" onclick="savePrediction(${match.id}, this)" style="flex:2;">Guardar</button>` : ''}
+        ${!hasStarted ? `<button class="btn-primary${prediction ? ' btn-saved' : ''}" data-save="true" onclick="savePrediction(${match.id}, this)" style="flex:2;">${prediction ? '✓ Guardado' : 'Guardar'}</button>` : ''}
         <button class="btn-secondary" onclick="viewMatchDetails(${match.id})">Detalles</button>
         ${appState.profile?.is_admin ? `<button class="btn-secondary" onclick="openEditMatch(${match.id})" style="background:rgba(239, 68, 68, 0.2)">Editar</button>` : ''}
       </div>
@@ -607,15 +607,9 @@ async function savePrediction(matchId, btn) {
   if (error) {
     alert("Error al guardar: " + error.message);
   } else {
-    // Feedback visual rápido
     if (btn) {
-      const oldText = btn.textContent;
-      btn.textContent = "¡Guardado!";
-      btn.style.background = "var(--primary-hover)";
-      setTimeout(() => {
-        btn.textContent = oldText;
-        btn.style.background = ""; // Restaurar CSS original
-      }, 1500);
+      btn.textContent = "✓ Guardado";
+      btn.classList.add('btn-saved');
     } else {
       alert("Pronóstico guardado correctamente.");
     }
@@ -747,9 +741,21 @@ async function deleteMatch() {
   }
 }
 
+function markPredictionDirty(matchId) {
+  const inputA = document.getElementById(`pred-a-${matchId}`);
+  if (!inputA) return;
+  const card = inputA.closest('.match-card');
+  if (!card) return;
+  const btn = card.querySelector('[data-save="true"]');
+  if (!btn) return;
+  btn.textContent = 'Guardar';
+  btn.classList.remove('btn-saved');
+}
+
 // Make globally available
 window.app = app;
 window.savePrediction = savePrediction;
+window.markPredictionDirty = markPredictionDirty;
 window.viewMatchDetails = viewMatchDetails;
 window.openEditMatch = openEditMatch;
 window.deleteMatch = deleteMatch;
